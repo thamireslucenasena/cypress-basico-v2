@@ -2,45 +2,62 @@
 
 
 describe('Central de Atendimento ao Cliente TAT', function() {
+    const THREE_SECONDS_IN_MS = 3000
     beforeEach(function(){
-        cy.visit('./src/index.html')   /*visitar a aplicação seja local ou na web*/
+        cy.visit('./src/index.html')  
     })
 
     it('verifica o título da aplicação', function() {
-        cy.title().should('be.equal','Central de Atendimento ao Cliente TAT') /*comparar se o titulo da pagina e igual ao esperado*/
+        cy.title().should('be.equal','Central de Atendimento ao Cliente TAT') 
     })
 
-    it('preenche os campos obrigatórios e envia o formulário', function(){
+    Cypress._.times(5, function (){ 
+        it('preenche os campos obrigatórios e envia o formulário', function(){
         const longText= 'Teste,teste,teste,teste,teste,,teste,teste,teste,teste,,teste,teste,teste,teste,,teste,teste,teste,teste,,teste,teste,teste,teste,,teste,teste,teste,teste,,teste,teste,teste,teste,,teste,teste,teste,teste,vv'
-        cy.get('#firstName').type('Thamires') /*preencher campo atraves de um id*/
+
+        cy.clock()
+
+        cy.get('#firstName').type('Thamires') 
         cy.get('#lastName').type('Lucena')
         cy.get('#email').type('thamireslucenasena@gmail.com')
-        cy.get('#open-text-area').type(longText, {delay:0}) /*remover delay ao digitar texto muito grande*/
-        /*cy.get('.button').click() Procurar e clicar no elemento*/ 
-        cy.contains('button','Enviar').click() /*Identifica o elemento e ve se o texto corresponde ao esperado*/
-        cy.get('.success').should('be.visible') /*verificar se mensagem de sucesso está visivel*/
+        cy.get('#open-text-area').type(longText, {delay:0}) 
+       
+        cy.contains('button','Enviar').click() 
+        cy.get('.success').should('be.visible')
         cy.contains('Mensagem enviada com sucesso.').should('be.visible')
-    })
 
+        cy.tick(THREE_SECONDS_IN_MS) 
+
+        cy.get('.success').should('not.be.visible')
+     })
+    })
     it('exibe mensagem de erro ao submeter o formulário com um email com formatação inválida', function(){
+
+        cy.clock()
+
         cy.get('#firstName').type('Thamires')
         cy.get('#lastName').type('Lucena')
         cy.get('#email').type('thamireslucenasena@gmail,com')
         cy.get('#open-text-area').type('teste')
         cy.contains('button','Enviar').click()
 
-        cy.get('.error').should('be.visible') /*verificar se mensagem de erro está visivel*/
+        cy.get('.error').should('be.visible') 
         cy.contains('Valide os campos obrigatórios!').should('be.visible')
+
+        cy.tick(THREE_SECONDS_IN_MS)
+
+        cy.get('.error').should('not.be.visible') 
     })
 
     it('campo telefone continua vazio quando preenchido com valor não-numerico', function(){
         cy.get('#phone')
         .type('abcdefg')
         .should('have.value','')
-
     })
 
     it('exibe mensagem de erro quando o campo telefone se torna obrigatório, mas, não é preenchido antes do envio do formulário', function(){
+        cy.clock()
+
         cy.get('#firstName').type('Thamires')
         cy.get('#lastName').type('Lucena')
         cy.get('#email').type('thamireslucenasena@gmail.com')
@@ -48,15 +65,19 @@ describe('Central de Atendimento ao Cliente TAT', function() {
         cy.get('#open-text-area').type('teste')
         cy.contains('button','Enviar').click()
 
-        cy.get('.error').should('be.visible') /*verificar se mensagem de erro está visivel*/
+        cy.get('.error').should('be.visible') 
+
+        cy.tick(THREE_SECONDS_IN_MS)
+        
+        cy.get('.error').should('not.be.visible')
     })
 
     it('preenche e limpa os campos de nome, sobrenome, email e telefone', function(){
         cy.get('#firstName')
-            .type('Thamires') /*Digita conteudo no campo*/
-            .should('have.value','Thamires') /*Verifica se o conteudo digitado é o esperado*/
-            .clear() /*Limpa o campo*/
-            .should('have.value','') /*Verifica se o campo ficou em branco*/
+            .type('Thamires') 
+            .should('have.value','Thamires') 
+            .clear() 
+            .should('have.value','') 
         
         cy.get('#lastName')
             .type('Lucena')
@@ -79,13 +100,19 @@ describe('Central de Atendimento ao Cliente TAT', function() {
     })
 
     it('exibe mensagem de erro ao submeter o formulário sem preencher os campos obrigatórios', function(){
+        cy.clock()
         cy.contains('button','Enviar').click()
         cy.get('.error').should('be.visible') 
+        cy.tick(THREE_SECONDS_IN_MS)
+        cy.get('.error').should('not.be.visible')
     })
 
     it('enviar formulário com sucesso usando um comando customizado',function(){
-        cy.fillMandatoryFieldsAndSubmit() /*Os passos que se repetem foram simplificados em uma função só*/
+        cy.clock()
+        cy.fillMandatoryFieldsAndSubmit() 
         cy.get('.success').should('be.visible')
+        cy.tick(THREE_SECONDS_IN_MS)
+        cy.get('.error').should('not.be.visible')
     })
 
     it('seleciona um produto (Youtube) por seu texto', function(){
@@ -139,52 +166,97 @@ describe('Central de Atendimento ao Cliente TAT', function() {
 
      it('marca ambos os checkboxes, depois desmarca o último', function(){
         cy.get('input[type="checkbox"]')
-            .check() /*marca todos */
-            .last() /*pega o ultimo que foi marcado*/
-            .uncheck() /*desmarca esse ultimo que foi marcado*/
-            .should('not.be.checked') /*checa se realmente foi desmarcado*/
+            .check() 
+            .last() 
+            .uncheck() 
+            .should('not.be.checked') 
      })
 
      it('seleciona um arquivo na pasta fixtures', function(){
         cy.get('input[type="file"]#file-upload')
-            .should('not.have.value') /*verifica se ja tem algum documento inserido */
-            .selectFile('./cypress/fixtures/example.json') /*fazer o upload dos arquivos inserindo manualmente quando clica no botão*/
+            .should('not.have.value') 
+            .selectFile('./cypress/fixtures/example.json') 
             .should(function($input){
                 console.log($input)
-                expect($input[0].files[0].name).to.equal('example.json') /*verifica se o nome do arquivo bate com o que foi feito o upload */
+                expect($input[0].files[0].name).to.equal('example.json') 
             })
      })
 
      it('seleciona um arquivo simulando um drag-and-drop', function(){
         cy.get('input[type="file"]#file-upload')
-        .should('not.have.value') /*verifica se ja tem algum documento inserido */
-        .selectFile('./cypress/fixtures/example.json', {action:'drag-drop'}) /*fazer o upload dos arquivos simulando que esta arrastando da janela pra pagina*/
+        .should('not.have.value') 
+        .selectFile('./cypress/fixtures/example.json', {action:'drag-drop'}) 
         .should(function($input){
             console.log($input)
-            expect($input[0].files[0].name).to.equal('example.json') /*verifica seo nome do arquivo bate com o que foi feito o upload */
+            expect($input[0].files[0].name).to.equal('example.json') 
         })
      })
 
      it('seleciona um arquivo utilizando uma fixture para a qual foi dada um alias', function(){
-        cy.fixture('example.json').as('sampleFile') /*maneira pra facilitar pra precisar escrever o caminho todo do arquivo */
+        cy.fixture('example.json').as('sampleFile') 
         cy.get('input[type="file"]#file-upload')
             .selectFile('@sampleFile')  
             .should(function($input){
                 console.log($input)
-                expect($input[0].files[0].name).to.equal('example.json') /*verifica seo nome do arquivo bate com o que foi feito o upload */
+                expect($input[0].files[0].name).to.equal('example.json')
             })
      })
 
      it('verifica que a politica de privacidade abre em outra aba sem necessidade de um clique', function(){
-        cy.get('#privacy a').should('have.attr', 'target','_blank') /*pega a ancora e verifica se ela deve abrir em outra aba, ou seja, se tem o valor blank" */
+        cy.get('#privacy a').should('have.attr', 'target','_blank') 
      })
 
      it('acessa a página da politica de privacidade removendo o target e então clicando no link', function(){
         cy.get('#privacy a')
-            .invoke('removeAttr','target') /*remove o target pra conseguir acessar na mesma pagina do cypress */
+            .invoke('removeAttr','target') 
             .click()
-            cy.contains('Talking About Testing').should('be.visible')
+        cy.contains('Talking About Testing').should('be.visible')
      })
 
+     it('exibe e esconde as mensagens de sucesso e erro usando o .invoke ()', function() {
+        cy.get('.success')
+            .should('not.be.visible')
+            .invoke('show')
+            .should('be.visible')
+            .and('contain', 'Mensagem enviada com sucesso.')
+            .invoke('hide')
+            .should('not.be.visible')
+        cy.get('.error')
+            .should('not.be.visible')
+            .invoke('show')
+            .should('be.visible')
+            .and('contain', 'Valide os campos obrigatórios!')
+            .invoke('hide')
+            .should('not.be.visible')
+     })
+
+     it('preenche a area de texto usando o comando invoke', function(){
+        const longText = Cypress._.repeat('0123456789', 20) 
+
+        cy.get('#open-text-area')
+            .invoke('val', longText) 
+            .should('have.value', longText)
+     })
+
+     it('faz uma requisição HTTP', function(){
+        cy.request('https://cac-tat.s3.eu-central-1.amazonaws.com/index.html')
+         .should(function (response) {
+            console.log(response)
+                const { status, statusText, body} = response
+                expect(status).to.equal(200)
+                expect(statusText).to.equal('OK')
+                expect(body).to.include('CAC TAT')
+        })
+
+     })
+
+     it('Desafio: encontre o gato escondido', function(){
+        cy.get('#cat')
+        .invoke('show')
+        .should('be.visible')
+
+        cy.get('#title')
+        .invoke('text','CAT TAT') 
+     })
 
 })
